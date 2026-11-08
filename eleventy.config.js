@@ -1,4 +1,5 @@
 import path from "node:path";
+import { HtmlBasePlugin } from "@11ty/eleventy";
 import pluginWebc from "@11ty/eleventy-plugin-webc";
 import * as pagefind from "pagefind";
 import { registerAsciidocExtension } from "./src/lib/asciidoc.js";
@@ -6,6 +7,9 @@ import { registerNavigation } from "./src/lib/navigation.js";
 import { registerFilters } from "./src/lib/filters.js";
 
 export default function (eleventyConfig) {
+  // Support pathPrefix for GitHub Pages subpath deployment (/renon/)
+  eleventyConfig.addPlugin(HtmlBasePlugin);
+
   // Ignore internal helper libraries inside src/lib/ from template processing
   eleventyConfig.ignores.add("src/lib/**");
 
