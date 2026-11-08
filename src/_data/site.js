@@ -27,7 +27,7 @@ export default {
     {
       icon: "github",
       label: "GitHub 專案原始碼",
-      url: "https://github.com/KevinChueh/renon"
+      url: "https://github.com/slime21023/renon"
     }
   ],
 
@@ -51,8 +51,8 @@ export default {
   },
 
   // 6. 程式碼倉庫與頁尾設定
-  repoUrl: "https://github.com/KevinChueh/renon",
-  editBaseUrl: "https://github.com/KevinChueh/renon/edit/main/",
+  repoUrl: "https://github.com/slime21023/renon",
+  editBaseUrl: "https://github.com/slime21023/renon/edit/main/",
   editLinkText: "於 GitHub 編輯此頁",
   footer: {
     copyright: "© 2026 Renon Documentation. Built with Eleventy v3, AsciiDoc & WebC."
