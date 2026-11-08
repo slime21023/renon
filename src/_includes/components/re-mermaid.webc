@@ -1,0 +1,130 @@
+<style>
+  @layer components {
+    .re-mermaid {
+      margin: 1.75rem 0;
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .re-mermaid__source {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: left;
+      margin: 0;
+    }
+
+    .re-mermaid[data-rendered="true"] {
+      cursor: zoom-in;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .re-mermaid[data-rendered="true"]:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .re-mermaid[data-rendered="true"] .re-mermaid__source {
+      display: none;
+    }
+
+    .re-mermaid__stage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 2rem;
+    }
+
+    .re-mermaid__stage svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .re-mermaid__caption {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const blocks = Array.from(document.querySelectorAll("[data-mermaid-block]"));
+    if (blocks.length === 0) return;
+
+    let mermaidPromise = null;
+    let renderCount = 0;
+
+    function loadMermaid() {
+      if (window.mermaid) return Promise.resolve(window.mermaid);
+      if (mermaidPromise) return mermaidPromise;
+
+      mermaidPromise = new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "/assets/vendor/mermaid/mermaid.min.js";
+        script.onload = () => resolve(window.mermaid || null);
+        script.onerror = () => resolve(null);
+        document.head.appendChild(script);
+      });
+      return mermaidPromise;
+    }
+
+    async function renderAllDiagrams() {
+      const mermaid = await loadMermaid();
+      if (!mermaid) return;
+
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? "dark" : "default",
+        securityLevel: "strict",
+        fontFamily: "var(--font-sans)"
+      });
+
+      for (const block of blocks) {
+        const sourceEl = block.querySelector(".re-mermaid__source");
+        const stageEl = block.querySelector(".re-mermaid__stage");
+        if (!sourceEl || !stageEl) continue;
+
+        const graphDef = (sourceEl.textContent || "").trim();
+        if (!graphDef) continue;
+
+        try {
+          renderCount += 1;
+          const renderId = `re-mermaid-svg-${renderCount}-${Date.now()}`;
+          const { svg } = await mermaid.render(renderId, graphDef);
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(svg, "text/html");
+          const svgEl = htmlDoc.body.querySelector("svg");
+          if (svgEl) {
+            stageEl.replaceChildren(svgEl);
+            block.setAttribute("data-rendered", "true");
+          }
+        } catch {
+          // Leave raw source visible if diagram syntax is invalid
+        }
+      }
+    }
+
+    renderAllDiagrams();
+
+    // Re-render diagrams automatically when dark/light theme changes
+    const themeObserver = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === "attributes" && m.attributeName === "data-theme") {
+          renderAllDiagrams();
+          break;
+        }
+      }
+    });
+
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"]
+    });
+  })();
+</script>

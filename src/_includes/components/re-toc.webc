@@ -1,0 +1,152 @@
+<aside class="re-toc" aria-label="本頁目錄大綱">
+  <script webc:type="js">
+    const toc = Array.isArray(this.toc) ? this.toc : [];
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    function renderItems(items) {
+      if (!Array.isArray(items) || items.length === 0) return "";
+      return `<ul class="re-toc__list">
+        ${items
+          .map(
+            (item) => `<li class="re-toc__item re-toc__item--l${item.level || 2}">
+              <a href="#${escape(item.id)}" class="re-toc__link" data-toc-link="${escape(item.id)}">${escape(item.title)}</a>
+              ${renderItems(item.children)}
+            </li>`
+          )
+          .join("")}
+      </ul>`;
+    }
+
+    if (toc.length === 0) {
+      `<div class="re-toc__inner is-empty"></div>`;
+    } else {
+      `<div class="re-toc__inner">
+        <p class="re-toc__heading">本頁大綱</p>
+        <nav class="re-toc__nav">
+          ${renderItems(toc)}
+        </nav>
+      </div>`;
+    }
+  </script>
+</aside>
+
+<style>
+  @layer components {
+    re-toc {
+      display: block;
+      flex-shrink: 0;
+      position: sticky;
+      top: var(--header-height);
+      height: calc(100vh - var(--header-height));
+    }
+
+    .re-toc {
+      width: var(--toc-width);
+      height: 100%;
+      overflow-y: auto;
+      padding: 1.75rem 1rem 2.5rem;
+      font-size: 0.825rem;
+    }
+
+    .re-toc__inner.is-empty {
+      display: none;
+    }
+
+    .re-toc__heading {
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .re-toc__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-left: 1px solid var(--border-subtle);
+    }
+
+    .re-toc__list .re-toc__list {
+      border-left: none;
+      padding-left: 0.75rem;
+    }
+
+    .re-toc__item--l4 > .re-toc__link {
+      font-size: 0.78rem;
+      padding-left: 0.9rem;
+    }
+
+    .re-toc__link {
+      display: block;
+      padding: 0.28rem 0 0.28rem 0.75rem;
+      margin-left: -1px;
+      border-left: 2px solid transparent;
+      color: var(--text-muted);
+      text-decoration: none;
+      line-height: 1.4;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .re-toc__link:hover {
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .re-toc__link.is-active {
+      color: var(--color-accent);
+      border-left-color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 1200px) {
+      .re-toc {
+        display: none;
+      }
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
+    if (tocLinks.length === 0) return;
+
+    const headingElements = tocLinks
+      .map((link) => document.getElementById(link.getAttribute("data-toc-link")))
+      .filter(Boolean);
+
+    if (headingElements.length === 0) return;
+
+    function setActiveId(id) {
+      tocLinks.forEach((link) => {
+        const match = link.getAttribute("data-toc-link") === id;
+        link.classList.toggle("is-active", match);
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+            break;
+          }
+        }
+      },
+      {
+        rootMargin: "-80px 0px -70% 0px",
+        threshold: 0
+      }
+    );
+
+    headingElements.forEach((el) => observer.observe(el));
+    setActiveId(headingElements[0].id);
+  })();
+</script>

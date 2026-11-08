@@ -1,0 +1,28 @@
+---
+layout: layouts/base.webc
+---
+<div class="re-page-shell">
+  <re-header :@site="site" :@current-url="page.url"></re-header>
+  <main class="re-page-main" id="main-content" data-pagefind-body>
+    <article class="re-page-article">
+      <h1 webc:if="title" class="re-page-title" @text="title"></h1>
+      <div class="re-prose" @raw="content"></div>
+    </article>
+  </main>
+</div>
+
+<style>
+  @layer components {
+    .re-page-main {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .re-page-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+    }
+  }
+</style>

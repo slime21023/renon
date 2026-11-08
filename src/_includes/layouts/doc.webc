@@ -1,0 +1,173 @@
+---
+layout: layouts/base.webc
+---
+<div class="re-doc-shell">
+  <re-header :@site="site" :@current-url="page.url"></re-header>
+
+  <div class="re-doc-workspace">
+    <re-sidebar :@tree="collections.docsTree" :@current-url="page.url" :@site="site"></re-sidebar>
+
+    <main class="re-doc-main" id="main-content" data-pagefind-body>
+      <article class="re-doc-article">
+        <header class="re-doc-article__header">
+          <re-breadcrumbs
+            webc:if="pageBreadcrumbs !== false && (pageBreadcrumbs === true || site?.features?.breadcrumbs !== false)"
+            :@tree="collections.docsTree"
+            :@current-url="page.url"
+          ></re-breadcrumbs>
+          <h1 class="re-doc-article__title" @text="title"></h1>
+          <p webc:if="description" class="re-doc-article__desc" @text="description"></p>
+          <div class="re-doc-article__meta">
+            <span
+              webc:if="pageReadingTime !== false && (pageReadingTime === true || site?.features?.readingTime !== false)"
+              class="re-doc-article__reading"
+            >
+              預估閱讀時間 <strong @text="readingTime(content)"></strong> 分鐘
+            </span>
+            <script webc:type="js">
+              const tags = Array.isArray(this.tags) ? this.tags : [];
+              const escape = (s) =>
+                String(s ?? "")
+                  .replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;");
+              if (tags.length === 0) {
+                "";
+              } else {
+                `<div class="re-doc-article__tags">
+                  ${tags
+                    .map((t) => {
+                      const slug = encodeURIComponent(String(t).trim().toLowerCase());
+                      return `<a href="/tags/${escape(slug)}/" class="re-doc-article__tag">#${escape(t)}</a>`;
+                    })
+                    .join("")}
+                </div>`;
+              }
+            </script>
+          </div>
+        </header>
+
+        <re-mobile-toc :@toc="toc"></re-mobile-toc>
+
+        <div class="re-prose" @raw="content"></div>
+
+        <re-doc-footer
+          :@last-updated="lastUpdated"
+          :@edit-path="editPath"
+          :@site="site"
+          :@page-edit-link="pageEditLink"
+          :@page-last-updated="pageLastUpdated"
+        ></re-doc-footer>
+
+        <re-prev-next
+          webc:if="pagePrevNext !== false && (pagePrevNext === true || site?.features?.prevNext !== false)"
+          :@tree="collections.docsTree"
+          :@current-url="page.url"
+        ></re-prev-next>
+      </article>
+    </main>
+
+    <re-toc :@toc="toc"></re-toc>
+  </div>
+
+  <re-tabs></re-tabs>
+  <re-mermaid></re-mermaid>
+  <re-lightbox></re-lightbox>
+</div>
+
+<style>
+  @layer components {
+    .re-doc-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .re-doc-workspace {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .re-doc-main {
+      flex: 1;
+      min-width: 0;
+      padding: 2rem 3rem 4rem;
+    }
+
+    .re-doc-article {
+      max-width: var(--content-max-width);
+      margin: 0 auto;
+      transition: max-width 0.2s ease;
+    }
+
+    .re-doc-article__header {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-doc-article__title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .re-doc-article__desc {
+      margin-top: 0.65rem;
+      font-size: 1.075rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .re-doc-article__meta {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .re-doc-article__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .re-doc-article__tag {
+      padding: 0.1rem 0.55rem;
+      border-radius: 999px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      text-decoration: none;
+      transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .re-doc-article__tag:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background-color: var(--color-accent-soft);
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .re-doc-main {
+        padding: 1.5rem 1.15rem 3rem;
+      }
+
+      .re-doc-article__title {
+        font-size: 1.65rem;
+      }
+    }
+  }
+</style>

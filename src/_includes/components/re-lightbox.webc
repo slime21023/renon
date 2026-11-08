@@ -1,0 +1,176 @@
+<dialog class="re-lightbox" aria-label="圖片與圖表放大預覽" data-lightbox-dialog>
+  <div class="re-lightbox__container">
+    <button type="button" class="re-lightbox__close" data-lightbox-close aria-label="關閉預覽">
+      ESC 關閉
+    </button>
+    <img alt="" class="re-lightbox__img" data-lightbox-img hidden />
+    <div class="re-lightbox__svg-stage" data-lightbox-svg hidden></div>
+    <p class="re-lightbox__caption" data-lightbox-caption></p>
+  </div>
+</dialog>
+
+<style>
+  @layer components {
+    .re-lightbox {
+      margin: auto;
+      width: min(94vw, 88rem);
+      max-height: 92vh;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      background-color: var(--bg-elevated);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-lg);
+      padding: 1.25rem;
+    }
+
+    .re-lightbox::backdrop {
+      background-color: var(--bg-backdrop);
+      backdrop-filter: blur(4px);
+    }
+
+    .re-lightbox__container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      position: relative;
+    }
+
+    .re-lightbox__close {
+      align-self: flex-end;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .re-lightbox__close:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    .re-lightbox__img {
+      width: min(90vw, 84rem);
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+    }
+
+    .re-lightbox__svg-stage {
+      width: 100%;
+      max-height: 80vh;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.25rem;
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-md);
+    }
+
+    .re-lightbox__svg-stage[hidden],
+    .re-lightbox__img[hidden] {
+      display: none;
+    }
+
+    .re-lightbox__svg-stage svg {
+      width: 100%;
+      max-width: 80rem;
+      height: auto;
+    }
+
+    .re-lightbox__caption {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const dialog = document.querySelector("[data-lightbox-dialog]");
+    const imgEl = document.querySelector("[data-lightbox-img]");
+    const svgStageEl = document.querySelector("[data-lightbox-svg]");
+    const captionEl = document.querySelector("[data-lightbox-caption]");
+    const closeBtn = document.querySelector("[data-lightbox-close]");
+
+    if (!dialog || !imgEl || !svgStageEl || !captionEl) return;
+
+    function openImageLightbox(imgTrigger) {
+      const src = imgTrigger.getAttribute("data-lightbox-src") || imgTrigger.getAttribute("src") || "";
+      if (!src) return;
+      const alt = imgTrigger.getAttribute("data-lightbox-alt") || imgTrigger.getAttribute("alt") || "";
+      const caption = imgTrigger.getAttribute("data-lightbox-caption") || alt;
+
+      svgStageEl.hidden = true;
+      svgStageEl.replaceChildren();
+
+      imgEl.setAttribute("src", src);
+      imgEl.setAttribute("alt", alt);
+      imgEl.hidden = false;
+      captionEl.textContent = caption;
+
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      // 1. Standard image figure or prose img zoom
+      const imgTrigger = e.target.closest("[data-lightbox-src], .re-prose img");
+      if (imgTrigger) {
+        openImageLightbox(imgTrigger);
+        return;
+      }
+
+      // 2. Rendered Mermaid SVG diagram zoom
+      const mermaidBlock = e.target.closest("[data-mermaid-block][data-rendered='true']");
+      if (mermaidBlock) {
+        const originalSvg = mermaidBlock.querySelector(".re-mermaid__stage svg");
+        if (!originalSvg) return;
+
+        const captionNode = mermaidBlock.querySelector(".re-mermaid__caption");
+        const caption = captionNode ? captionNode.textContent : "Mermaid 架構圖";
+
+        imgEl.hidden = true;
+        imgEl.removeAttribute("src");
+
+        const clonedSvg = originalSvg.cloneNode(true);
+        clonedSvg.removeAttribute("width");
+        clonedSvg.style.maxWidth = "100%";
+        svgStageEl.replaceChildren(clonedSvg);
+        svgStageEl.hidden = false;
+        captionEl.textContent = caption || "";
+
+        if (!dialog.open) {
+          dialog.showModal();
+        }
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const imgTrigger = e.target.closest("[data-lightbox-src]");
+      if (imgTrigger) {
+        e.preventDefault();
+        openImageLightbox(imgTrigger);
+      }
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => dialog.close());
+    }
+
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) {
+        dialog.close();
+      }
+    });
+  })();
+</script>

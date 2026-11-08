@@ -1,0 +1,273 @@
+<header class="re-header">
+  <div class="re-header__inner">
+    <div class="re-header__left">
+      <button
+        webc:if="site?.features?.sidebarCollapsible !== false"
+        type="button"
+        class="re-header__menu-btn"
+        aria-label="收合或展開左側章節導覽"
+        title="收合 / 展開左側導覽列"
+        aria-expanded="true"
+        data-sidebar-toggle
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
+
+      <a href="/" class="re-header__brand">
+        <script webc:type="js">
+          const logo = this.site?.logo || {};
+          const badge = this.site?.badge;
+          const title = this.site?.title || "Renon";
+          const escape = (s) =>
+            String(s ?? "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+
+          const logoHtml = logo.image
+            ? `<img src="${escape(logo.image)}" alt="${escape(logo.alt || title)}" class="re-header__logo-img" />`
+            : `<span class="re-header__logo" aria-hidden="true">${escape(logo.text || title.slice(0, 1) || "R")}</span>`;
+
+          const badgeHtml =
+            badge && String(badge).trim()
+              ? `<span class="re-header__badge">${escape(badge)}</span>`
+              : "";
+
+          `${logoHtml}<span class="re-header__title">${escape(title)}</span>${badgeHtml}`;
+        </script>
+      </a>
+    </div>
+
+    <nav class="re-header__nav" aria-label="主導覽選單">
+      <script webc:type="js">
+        const navItems = this.site?.topNav || [];
+        const current = String(this.currentUrl || "/");
+        const escape = (s) =>
+          String(s ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+        navItems
+          .map((item) => {
+            const url = String(item.url || "/");
+            const isExternal = item.external === true || /^https?:\/\//i.test(url);
+            const isActive =
+              !isExternal &&
+              (url === "/" ? current === "/" : current.startsWith(url));
+            const ariaAttr = isActive ? ' aria-current="page"' : "";
+            const activeClass = isActive ? " is-active" : "";
+            const targetAttr = isExternal
+              ? ' target="_blank" rel="noopener noreferrer"'
+              : "";
+            const externalIcon = isExternal
+              ? `<svg class="re-header__ext-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`
+              : "";
+            return `<a href="${escape(url)}" class="re-header__nav-link${activeClass}"${ariaAttr}${targetAttr}><span>${escape(item.label)}</span>${externalIcon}</a>`;
+          })
+          .join("");
+      </script>
+    </nav>
+
+    <div class="re-header__actions">
+      <re-search webc:if="site?.features?.search !== false"></re-search>
+
+      <script webc:type="js">
+        const socialLinks = Array.isArray(this.site?.socialLinks)
+          ? this.site.socialLinks
+          : [];
+        const escape = (s) =>
+          String(s ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+        const ICONS = {
+          github: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>`,
+          x: `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>`,
+          discord: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="1"></circle><circle cx="15" cy="12" r="1"></circle><path d="M7.5 7.5c3.5-1 5.5-1 9 0"></path><path d="M7 16.5c3.5 1 6.5 1 10 0"></path><path d="M15.5 17c0 1 1.5 3 2 3 1.5 0 2.833-1.667 3.5-3 .667-1.667.5-5.833-1.5-11.5-1.457-1.015-3-1.34-4.5-1.5l-1 2.5"></path><path d="M8.5 17c0 1-1.356 3-1.832 3-1.429 0-2.698-1.667-3.333-3-.635-1.667-.476-5.833 1.428-11.5C6.151 4.485 7.5 4.16 9 4l1 2.5"></path></svg>`,
+          globe: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`
+        };
+
+        socialLinks
+          .filter((item) => item && item.url)
+          .map((item) => {
+            const key = String(item.icon || "globe").toLowerCase();
+            const svg = ICONS[key] || ICONS.globe;
+            const label = item.label || key;
+            return `<a href="${escape(item.url)}" class="re-header__social-link" target="_blank" rel="noopener noreferrer" aria-label="${escape(label)}" title="${escape(label)}">${svg}</a>`;
+          })
+          .join("");
+      </script>
+
+      <re-theme-toggle webc:if="site?.features?.themeToggle !== false"></re-theme-toggle>
+    </div>
+  </div>
+</header>
+
+<style>
+  @layer components {
+    .re-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: var(--header-height);
+      background-color: color-mix(in srgb, var(--bg-canvas) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-header__inner {
+      width: 100%;
+      height: 100%;
+      padding: 0 1.25rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .re-header__left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .re-header__menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.15rem;
+      height: 2.15rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .re-header__menu-btn:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background-color: var(--bg-hover);
+    }
+
+    .re-header__brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+    }
+
+    .re-header__brand:hover {
+      text-decoration: none;
+    }
+
+    .re-header__logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.85rem;
+      height: 1.85rem;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+      color: var(--text-on-accent);
+      font-weight: 800;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .re-header__logo-img {
+      width: 1.85rem;
+      height: 1.85rem;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+    }
+
+    .re-header__badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background-color: var(--color-accent-soft);
+      color: var(--color-accent);
+      border: 1px solid var(--color-accent-border);
+    }
+
+    .re-header__nav {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .re-header__nav-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .re-header__nav-link:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .re-header__nav-link.is-active {
+      color: var(--color-accent);
+      background-color: var(--color-accent-soft);
+      font-weight: 600;
+    }
+
+    .re-header__ext-icon {
+      opacity: 0.65;
+    }
+
+    .re-header__actions {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .re-header__social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      color: var(--text-secondary);
+      transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .re-header__social-link:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background-color: var(--bg-hover);
+    }
+
+    @media (max-width: 768px) {
+      .re-header__nav {
+        display: none;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,165 @@
+<style>
+  @layer components {
+    .re-tabs {
+      margin: 1.5rem 0;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-canvas);
+      overflow: hidden;
+    }
+
+    .re-tabs__header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.4rem 0.6rem 0;
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-tabs__tab {
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: 2px solid transparent;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .re-tabs__tab:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    .re-tabs__tab.is-active {
+      color: var(--color-accent);
+      background-color: var(--bg-canvas);
+      border-color: var(--border-subtle);
+      border-bottom-color: var(--color-accent);
+    }
+
+    .re-tabs__body {
+      padding: 1rem 1.15rem;
+    }
+
+    .re-tabs__panel > :first-child,
+    .re-tabs__panel > .re-codeblock:first-child {
+      margin-top: 0;
+    }
+
+    .re-tabs__panel > :last-child,
+    .re-tabs__panel > .re-codeblock:last-child,
+    .re-tabs__panel .paragraph:last-child {
+      margin-bottom: 0;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const tabContainers = Array.from(document.querySelectorAll("[data-tabs]"));
+    if (tabContainers.length === 0) return;
+
+    function activateTabByIndex(container, targetIndex, focusTab = false) {
+      const tabs = Array.from(container.querySelectorAll("[role='tab']"));
+      const panels = Array.from(container.querySelectorAll("[role='tabpanel']"));
+      if (targetIndex < 0 || targetIndex >= tabs.length) return;
+
+      tabs.forEach((tab, idx) => {
+        const isSelected = idx === targetIndex;
+        tab.classList.toggle("is-active", isSelected);
+        tab.setAttribute("aria-selected", String(isSelected));
+        tab.setAttribute("tabindex", isSelected ? "0" : "-1");
+        if (isSelected && focusTab) {
+          tab.focus();
+        }
+      });
+
+      panels.forEach((panel, idx) => {
+        const isSelected = idx === targetIndex;
+        panel.classList.toggle("is-active", isSelected);
+        panel.hidden = !isSelected;
+      });
+    }
+
+    function syncGroupSelection(syncGroup, tabValue, sourceContainer) {
+      if (!syncGroup || !tabValue) return;
+      try {
+        localStorage.setItem(`renon-tabs-${syncGroup}`, tabValue);
+      } catch {
+        // Ignore storage errors
+      }
+
+      tabContainers.forEach((container) => {
+        if (container === sourceContainer) return;
+        if (container.getAttribute("data-sync-group") !== syncGroup) return;
+        const tabs = Array.from(container.querySelectorAll("[role='tab']"));
+        const matchIdx = tabs.findIndex((t) => t.getAttribute("data-tab-value") === tabValue);
+        if (matchIdx !== -1) {
+          activateTabByIndex(container, matchIdx, false);
+        }
+      });
+    }
+
+    tabContainers.forEach((container) => {
+      if (container.dataset.bound === "true") return;
+      container.dataset.bound = "true";
+
+      const syncGroup = container.getAttribute("data-sync-group");
+      const tabs = Array.from(container.querySelectorAll("[role='tab']"));
+
+      // Restore saved tab for synced tab groups
+      if (syncGroup) {
+        try {
+          const savedVal = localStorage.getItem(`renon-tabs-${syncGroup}`);
+          if (savedVal) {
+            const savedIdx = tabs.findIndex((t) => t.getAttribute("data-tab-value") === savedVal);
+            if (savedIdx !== -1) {
+              activateTabByIndex(container, savedIdx, false);
+            }
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      tabs.forEach((tab, idx) => {
+        tab.addEventListener("click", () => {
+          activateTabByIndex(container, idx, false);
+          if (syncGroup) {
+            syncGroupSelection(syncGroup, tab.getAttribute("data-tab-value"), container);
+          }
+        });
+
+        tab.addEventListener("keydown", (e) => {
+          let nextIdx = null;
+          if (e.key === "ArrowRight") {
+            nextIdx = (idx + 1) % tabs.length;
+          } else if (e.key === "ArrowLeft") {
+            nextIdx = (idx - 1 + tabs.length) % tabs.length;
+          } else if (e.key === "Home") {
+            nextIdx = 0;
+          } else if (e.key === "End") {
+            nextIdx = tabs.length - 1;
+          }
+
+          if (nextIdx !== null) {
+            e.preventDefault();
+            activateTabByIndex(container, nextIdx, true);
+            if (syncGroup) {
+              syncGroupSelection(
+                syncGroup,
+                tabs[nextIdx].getAttribute("data-tab-value"),
+                container
+              );
+            }
+          }
+        });
+      });
+    });
+  })();
+</script>

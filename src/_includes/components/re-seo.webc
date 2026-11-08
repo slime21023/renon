@@ -1,0 +1,47 @@
+<script webc:type="js">
+  const site = this.site || {};
+  const baseUrl = String(site.url || "http://localhost:8080").replace(/\/$/, "");
+  const pageUrl = String(this.currentUrl || "/");
+  const canonicalUrl = `${baseUrl}${pageUrl}`;
+  const pageTitle = this.pageTitle
+    ? `${this.pageTitle} — ${site.title || "Renon"}`
+    : site.title || "Renon";
+  const desc = this.description || site.tagline || "";
+  const lastUpdated = this.lastUpdated || new Date().toISOString();
+
+  const escape = (s) =>
+    String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: this.pageTitle || site.title || "Renon",
+    description: desc,
+    url: canonicalUrl,
+    dateModified: lastUpdated,
+    author: {
+      "@type": "Organization",
+      name: site.author || site.title || "Renon"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: site.title || "Renon"
+    }
+  }).replace(/</g, "\\u003c");
+
+  `<link rel="canonical" href="${escape(canonicalUrl)}" />
+  <link rel="alternate" type="application/atom+xml" title="${escape(site.title || 'Renon')} Atom Feed" href="${escape(baseUrl)}/feed.xml" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="${escape(site.title || 'Renon')}" />
+  <meta property="og:title" content="${escape(pageTitle)}" />
+  <meta property="og:description" content="${escape(desc)}" />
+  <meta property="og:url" content="${escape(canonicalUrl)}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="${escape(pageTitle)}" />
+  <meta name="twitter:description" content="${escape(desc)}" />
+  <script type="application/ld+json">${jsonLd}<\/script>`;
+</script>

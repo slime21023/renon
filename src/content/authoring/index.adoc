@@ -1,0 +1,14 @@
+= 第二章：AsciiDoc 寫作與元件指南
+:nav-title: 寫作指南
+:nav-order: 2
+:description: 掌握 AsciiDoc 進階排版語法，以及如何透過 WebC 擴充互動式介面元件。
+:page-tags: authoring, asciidoc, webc
+
+AsciiDoc 是專為技術書籍、API 手冊與大型知識庫設計的標記語言。相較於一般 Markdown 需要依賴各種非標準外掛才能寫出提示框、定義清單或複雜表格，AsciiDoc 原生即具備嚴謹且一致的語法規範。
+
+== 本章重點內容
+
+* link:/authoring/syntax-showcase/[AsciiDoc 語法展示]：完整展示五種語意化提示框（Admonitions）、帶有檔名與複製按鈕的語法高亮程式碼區塊、資料表格、鍵盤快捷鍵與定義清單。
+* link:/authoring/webc-components/[WebC 元件與搜尋整合]：解析 `<re-*>` 元件如何透過原生 CSS `@layer` 與 Pagefind 協同運作。
+
+TIP: 隨時按下鍵盤上的 kbd:[Ctrl+K]（macOS 為 kbd:[Cmd+K]），即可測試即時搜尋本章節的所有範例關鍵字！

@@ -1,0 +1,51 @@
+---js
+{
+  layout: "layouts/doc.webc",
+  pagination: {
+    data: "collections.tagList",
+    size: 1,
+    alias: "tagEntry"
+  },
+  eleventyComputed: {
+    title: (data) => `標籤：#${data.tagEntry?.tag || ""}`,
+    description: (data) => `包含「#${data.tagEntry?.tag || ""}」標籤的所有知識文件（共 ${data.tagEntry?.count || 0} 篇）。`,
+    permalink: (data) => data.tagEntry ? `/tags/${data.tagEntry.slug}/` : false
+  }
+}
+---
+<div class="re-tag-detail">
+  <p class="re-tag-detail__back">
+    <a href="/tags/">← 返回全站標籤索引</a>
+  </p>
+
+  <script webc:type="js">
+    const entry = this.tagEntry || { items: [] };
+    const items = Array.isArray(entry.items) ? entry.items : [];
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    `<div class="re-tag-group__cards">
+      ${items
+        .map(
+          (doc) => `<a href="${escape(doc.url)}" class="re-tag-card">
+            <strong class="re-tag-card__title">${escape(doc.title)}</strong>
+            ${doc.description ? `<p class="re-tag-card__desc">${escape(doc.description)}</p>` : ""}
+          </a>`
+        )
+        .join("")}
+    </div>`;
+  </script>
+</div>
+
+<style>
+  @layer components {
+    .re-tag-detail__back {
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>

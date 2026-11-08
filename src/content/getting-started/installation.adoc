@@ -1,0 +1,56 @@
+= 環境安裝與目錄結構
+:nav-title: 環境安裝與目錄結構
+:nav-order: 1
+:description: 使用 Bun 快速安裝與執行 Eleventy v3 + AsciiDoc + WebC 知識庫專案。
+:page-tags: installation, bun, directory
+
+Renon 採用原生 ESM (`"type": "module"`) 架構並針對 **Bun** 執行環境最佳化，具備極快的套件安裝與靜態頁面編譯速度。
+
+== 系統需求
+
+* **Bun** `v1.1+`（推薦）或 **Node.js** `v20+`
+* 現代化瀏覽器（支援原生 CSS `@layer` 與 `<dialog>` 元素）
+
+== 常用開發指令
+
+在專案根目錄下執行以下指令即可完成日常開發與建置：
+
+.安裝相依套件與啟動開發伺服器
+[source,bash]
+----
+# 1. 安裝所有專案相依套件
+bun install
+
+# 2. 啟動本地熱重載開發伺服器 (http://localhost:8080)
+bun run dev
+
+# 3. 建置正式版靜態網站與 Pagefind 全文檢索索引 (輸出至 _site/)
+bun run build
+----
+
+NOTE: 在執行 `bun run build` 或 `bun run dev` 完成首次編譯時，`eleventy.after` 掛鉤會自動呼叫 **Pagefind** 掃描 `_site/` 目錄並產生靜態搜尋索引。
+
+== 輸出網址對應規則 (Clean Permalinks)
+
+透過 `src/content/content.11tydata.js` 的自動計算規則，`src/content/` 下的檔案會自動剝除 `/content` 前綴，產出乾淨的語意化網址：
+
+[cols="2,2,2", options="header"]
+|===
+| 原始檔案路徑 | 建置輸出檔案 | 對應網站 URL
+
+| `src/content/index.adoc`
+| `_site/index.html`
+| `/`
+
+| `src/content/getting-started/index.adoc`
+| `_site/getting-started/index.html`
+| `/getting-started/`
+
+| `src/content/getting-started/installation.adoc`
+| `_site/getting-started/installation/index.html`
+| `/getting-started/installation/`
+|===
+
+== 跨檔案引用 (`include::[]`)
+
+AsciiDoc 支援將常見的設定表格或警告段落抽離為共用片段，並使用 `include::[]` 引入。`src/lib/asciidoc.js` 已向 Eleventy 註冊相依性追蹤，當被引入的檔案變更時會自動重新編譯主文件。

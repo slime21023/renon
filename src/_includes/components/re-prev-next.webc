@@ -1,0 +1,94 @@
+<nav class="re-prev-next" aria-label="上下篇導覽">
+  <script webc:type="js">
+    const tree = Array.isArray(this.tree) ? this.tree : [];
+    const currentUrl = String(this.currentUrl || "/");
+    const { prev, next } = this.getPrevNext
+      ? this.getPrevNext(tree, currentUrl)
+      : { prev: null, next: null };
+
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    if (!prev && !next) {
+      "";
+    } else {
+      const prevHtml = prev
+        ? `<a href="${escape(prev.url)}" class="re-prev-next__card re-prev-next__card--prev" rel="prev">
+            <span class="re-prev-next__label">← 上一篇</span>
+            <strong class="re-prev-next__title">${escape(prev.title)}</strong>
+          </a>`
+        : `<span class="re-prev-next__spacer"></span>`;
+
+      const nextHtml = next
+        ? `<a href="${escape(next.url)}" class="re-prev-next__card re-prev-next__card--next" rel="next">
+            <span class="re-prev-next__label">下一篇 →</span>
+            <strong class="re-prev-next__title">${escape(next.title)}</strong>
+          </a>`
+        : `<span class="re-prev-next__spacer"></span>`;
+
+      `<div class="re-prev-next__grid">${prevHtml}${nextHtml}</div>`;
+    }
+  </script>
+</nav>
+
+<style>
+  @layer components {
+    .re-prev-next {
+      margin-top: 3.5rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .re-prev-next__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .re-prev-next__card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.9rem 1.1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      text-decoration: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .re-prev-next__card:hover {
+      border-color: var(--color-accent);
+      background-color: var(--bg-hover);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .re-prev-next__card--next {
+      text-align: right;
+      align-items: flex-end;
+    }
+
+    .re-prev-next__label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .re-prev-next__title {
+      font-size: 0.95rem;
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .re-prev-next__grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+</style>

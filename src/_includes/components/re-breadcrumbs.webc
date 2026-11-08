@@ -1,0 +1,78 @@
+<nav class="re-breadcrumbs" aria-label="麵包屑導覽">
+  <script webc:type="js">
+    const tree = Array.isArray(this.tree) ? this.tree : [];
+    const currentUrl = String(this.currentUrl || "/");
+    const crumbs = this.getBreadcrumbs ? this.getBreadcrumbs(tree, currentUrl) : [];
+
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    if (!crumbs || crumbs.length <= 1) {
+      "";
+    } else {
+      `<ol class="re-breadcrumbs__list">
+        ${crumbs
+          .map((crumb, idx) => {
+            const isLast = idx === crumbs.length - 1;
+            if (isLast || !crumb.url) {
+              return `<li class="re-breadcrumbs__item">
+                <span class="re-breadcrumbs__current" aria-current="page">${escape(crumb.title)}</span>
+              </li>`;
+            }
+            return `<li class="re-breadcrumbs__item">
+              <a href="${escape(crumb.url)}" class="re-breadcrumbs__link">${escape(crumb.title)}</a>
+              <span class="re-breadcrumbs__sep" aria-hidden="true">/</span>
+            </li>`;
+          })
+          .join("")}
+      </ol>`;
+    }
+  </script>
+</nav>
+
+<style>
+  @layer components {
+    .re-breadcrumbs {
+      margin-bottom: 0.85rem;
+    }
+
+    .re-breadcrumbs__list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .re-breadcrumbs__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .re-breadcrumbs__link {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .re-breadcrumbs__link:hover {
+      color: var(--color-accent);
+      text-decoration: underline;
+    }
+
+    .re-breadcrumbs__current {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .re-breadcrumbs__sep {
+      opacity: 0.55;
+    }
+  }
+</style>

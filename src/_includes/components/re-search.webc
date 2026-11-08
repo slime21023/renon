@@ -1,0 +1,327 @@
+<div class="re-search">
+  <button
+    type="button"
+    class="re-search__trigger"
+    aria-label="搜尋知識庫 (Ctrl+K)"
+    data-search-open
+  >
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <span class="re-search__placeholder">搜尋文件...</span>
+    <kbd class="re-search__kbd">Ctrl K</kbd>
+  </button>
+
+  <dialog class="re-search__dialog" aria-label="站內全文搜尋" data-search-dialog>
+    <div class="re-search__modal">
+      <div class="re-search__input-bar">
+        <svg class="re-search__input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="search"
+          class="re-search__input"
+          placeholder="輸入關鍵字搜尋標題、章節或內文..."
+          autocomplete="off"
+          spellcheck="false"
+          data-search-input
+        />
+        <button type="button" class="re-search__close" data-search-close aria-label="關閉搜尋">
+          ESC
+        </button>
+      </div>
+
+      <div class="re-search__results" data-search-results role="region" aria-live="polite">
+        <p class="re-search__empty">輸入關鍵字以開始全文檢索（由 Pagefind 驅動）</p>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  @layer components {
+    .re-search__trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      height: 2.25rem;
+      padding: 0 0.75rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .re-search__trigger:hover {
+      border-color: var(--color-accent);
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
+    }
+
+    .re-search__placeholder {
+      padding-right: 0.5rem;
+    }
+
+    .re-search__kbd {
+      font-size: 0.7rem;
+      padding: 0.05rem 0.35rem;
+    }
+
+    .re-search__dialog {
+      margin: 8vh auto auto;
+      width: min(38rem, calc(100vw - 2rem));
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      background-color: var(--bg-elevated);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-lg);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .re-search__dialog::backdrop {
+      background-color: var(--bg-backdrop);
+      backdrop-filter: blur(3px);
+    }
+
+    .re-search__input-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-search__input-icon {
+      color: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .re-search__input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .re-search__close {
+      padding: 0.2rem 0.45rem;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .re-search__results {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 0.75rem;
+    }
+
+    .re-search__empty {
+      padding: 1.75rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .re-search__item {
+      display: block;
+      padding: 0.75rem 0.9rem;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: background-color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .re-search__item + .re-search__item {
+      margin-top: 0.35rem;
+    }
+
+    .re-search__item:hover,
+    .re-search__item:focus-visible {
+      background-color: var(--bg-hover);
+      border-color: var(--color-accent-border);
+      text-decoration: none;
+    }
+
+    .re-search__item-title {
+      display: block;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--color-accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .re-search__item-excerpt {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .re-search__item-excerpt mark {
+      background-color: var(--color-accent-soft);
+      color: var(--color-accent);
+      font-weight: 600;
+      padding: 0 0.2rem;
+      border-radius: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .re-search__placeholder,
+      .re-search__kbd {
+        display: none;
+      }
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const dialog = document.querySelector("[data-search-dialog]");
+    const openBtn = document.querySelector("[data-search-open]");
+    const closeBtn = document.querySelector("[data-search-close]");
+    const input = document.querySelector("[data-search-input]");
+    const resultsContainer = document.querySelector("[data-search-results]");
+
+    if (!dialog || !openBtn || !input || !resultsContainer) return;
+
+    let pagefindModule = null;
+
+    async function ensurePagefind() {
+      if (pagefindModule) return pagefindModule;
+      try {
+        const pfPath = "/pagefind/pagefind.js";
+        pagefindModule = await import(pfPath);
+        await pagefindModule.init();
+        return pagefindModule;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderMessage(text) {
+      resultsContainer.replaceChildren();
+      const p = document.createElement("p");
+      p.className = "re-search__empty";
+      p.textContent = text;
+      resultsContainer.appendChild(p);
+    }
+
+    /**
+     * Safely renders Pagefind excerpt strings containing <mark>...</mark>
+     * using DOM APIs (createElement / createTextNode) without innerHTML.
+     */
+    function appendSafeExcerpt(container, rawExcerpt) {
+      const cleaned = String(rawExcerpt || "")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&");
+      const parts = cleaned.split(/(<mark>.*?<\/mark>)/g);
+      for (const part of parts) {
+        if (part.startsWith("<mark>") && part.endsWith("</mark>")) {
+          const mark = document.createElement("mark");
+          mark.textContent = part.slice(6, -7);
+          container.appendChild(mark);
+        } else if (part) {
+          const plain = part.replace(/<[^>]*>/g, "");
+          container.appendChild(document.createTextNode(plain));
+        }
+      }
+    }
+
+    function openSearch() {
+      if (!dialog.open) {
+        dialog.showModal();
+        ensurePagefind();
+        setTimeout(() => input.focus(), 20);
+      }
+    }
+
+    function closeSearch() {
+      if (dialog.open) {
+        dialog.close();
+      }
+    }
+
+    openBtn.addEventListener("click", openSearch);
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeSearch);
+    }
+
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) {
+        closeSearch();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (dialog.open) {
+          closeSearch();
+        } else {
+          openSearch();
+        }
+      }
+    });
+
+    let debounceTimer = null;
+    input.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      const query = input.value.trim();
+      if (!query) {
+        renderMessage("輸入關鍵字以開始全文檢索（由 Pagefind 驅動）");
+        return;
+      }
+
+      debounceTimer = setTimeout(async () => {
+        const pf = await ensurePagefind();
+        if (!pf) {
+          renderMessage("搜尋索引尚未就緒，請先執行 bun run build 建立 Pagefind 索引。");
+          return;
+        }
+
+        const search = await pf.search(query);
+        if (!search || !search.results || search.results.length === 0) {
+          renderMessage(`找不到與「${query}」相符的文件`);
+          return;
+        }
+
+        const topResults = await Promise.all(
+          search.results.slice(0, 8).map((r) => r.data())
+        );
+
+        resultsContainer.replaceChildren();
+        for (const item of topResults) {
+          const link = document.createElement("a");
+          link.className = "re-search__item";
+          link.setAttribute("href", item.url || "#");
+
+          const titleEl = document.createElement("span");
+          titleEl.className = "re-search__item-title";
+          titleEl.textContent = item.meta?.title || item.url;
+
+          const excerptEl = document.createElement("p");
+          excerptEl.className = "re-search__item-excerpt";
+          appendSafeExcerpt(excerptEl, item.excerpt || "");
+
+          link.appendChild(titleEl);
+          link.appendChild(excerptEl);
+          resultsContainer.appendChild(link);
+        }
+      }, 150);
+    });
+  })();
+</script>

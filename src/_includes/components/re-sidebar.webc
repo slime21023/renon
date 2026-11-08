@@ -1,0 +1,378 @@
+<aside class="re-sidebar" aria-label="知識庫章節導覽" data-sidebar>
+  <div class="re-sidebar__toolbar">
+    <span class="re-sidebar__toolbar-title">章節導覽</span>
+    <button
+      webc:if="site?.features?.sidebarCollapsible !== false"
+      type="button"
+      class="re-sidebar__collapse-btn"
+      aria-label="最小化或展開左側導覽列"
+      title="最小化 / 展開導覽列"
+      data-sidebar-collapse
+    >
+      <svg class="re-sidebar__collapse-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="11 17 6 12 11 7"></polyline>
+        <polyline points="18 17 13 12 18 7"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="re-sidebar__nav">
+    <script webc:type="js">
+      const tree = Array.isArray(this.tree) ? this.tree : [];
+      const currentUrl = String(this.currentUrl || "/");
+
+      const normalize = (u) => {
+        if (!u) return "/";
+        const c = String(u).replace(/\/+/g, "/");
+        if (c === "/") return "/";
+        return c.endsWith("/") ? c : `${c}/`;
+      };
+
+      const escape = (s) =>
+        String(s ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+
+      const normCurrent = normalize(currentUrl);
+
+      function hasActiveDescendant(node) {
+        if (node.url && normalize(node.url) === normCurrent) return true;
+        if (Array.isArray(node.children)) {
+          return node.children.some((c) => hasActiveDescendant(c));
+        }
+        return false;
+      }
+
+      function renderNode(node, depth = 0) {
+        const isCurrent = node.url && normalize(node.url) === normCurrent;
+        const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+
+        if (!hasChildren) {
+          const href = node.url ? escape(node.url) : "#";
+          const activeClass = isCurrent ? " is-active" : "";
+          const ariaCurrent = isCurrent ? ' aria-current="page"' : "";
+          return `<li class="re-sidebar__item">
+            <a href="${href}" class="re-sidebar__link${activeClass}"${ariaCurrent}>${escape(node.title)}</a>
+          </li>`;
+        }
+
+        const isOpen = depth === 0 || hasActiveDescendant(node);
+        const openAttr = isOpen ? " open" : "";
+        const summaryActiveClass = isCurrent ? " is-active" : "";
+        const ariaCurrent = isCurrent ? ' aria-current="page"' : "";
+
+        const summaryContent = node.url
+          ? `<a href="${escape(node.url)}" class="re-sidebar__group-link${summaryActiveClass}"${ariaCurrent}>${escape(node.title)}</a>`
+          : `<span class="re-sidebar__group-label">${escape(node.title)}</span>`;
+
+        const childrenHtml = node.children.map((child) => renderNode(child, depth + 1)).join("");
+
+        return `<li class="re-sidebar__group">
+          <details class="re-sidebar__details"${openAttr}>
+            <summary class="re-sidebar__summary">
+              ${summaryContent}
+              <svg class="re-sidebar__chevron" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </summary>
+            <ul class="re-sidebar__sublist">
+              ${childrenHtml}
+            </ul>
+          </details>
+        </li>`;
+      }
+
+      `<ul class="re-sidebar__list">${tree.map((n) => renderNode(n, 0)).join("")}</ul>`;
+    </script>
+  </nav>
+</aside>
+
+<div class="re-sidebar-backdrop" data-sidebar-backdrop hidden></div>
+
+<style>
+  @layer components {
+    re-sidebar {
+      display: block;
+      flex-shrink: 0;
+      position: sticky;
+      left: 0;
+      top: var(--header-height);
+      height: calc(100vh - var(--header-height));
+      z-index: 35;
+    }
+
+    .re-sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-right: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      padding: 0.85rem 0.85rem 2.5rem;
+      font-size: 0.9rem;
+      transition: width 0.2s ease, padding 0.2s ease;
+    }
+
+    .re-sidebar__toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.25rem 0.35rem 0.65rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-sidebar__toolbar-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .re-sidebar__collapse-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .re-sidebar__collapse-btn:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--border-subtle);
+      color: var(--color-accent);
+    }
+
+    .re-sidebar__collapse-icon {
+      transition: transform 0.2s ease;
+    }
+
+    /* Minimized Rail State on Desktop (> 960px) */
+    @media (min-width: 961px) {
+      :root[data-sidebar-collapsed="true"] .re-sidebar {
+        width: var(--sidebar-collapsed-width);
+        padding: 0.75rem 0.35rem;
+        overflow: hidden;
+      }
+
+      :root[data-sidebar-collapsed="true"] .re-sidebar__toolbar {
+        justify-content: center;
+        border-bottom: none;
+        padding: 0;
+        margin-bottom: 0;
+      }
+
+      :root[data-sidebar-collapsed="true"] .re-sidebar__toolbar-title,
+      :root[data-sidebar-collapsed="true"] .re-sidebar__nav {
+        display: none;
+      }
+
+      :root[data-sidebar-collapsed="true"] .re-sidebar__collapse-icon {
+        transform: rotate(180deg);
+      }
+    }
+
+    .re-sidebar__list,
+    .re-sidebar__sublist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .re-sidebar__sublist {
+      margin-top: 0.2rem;
+      margin-left: 0.65rem;
+      padding-left: 0.65rem;
+      border-left: 1px solid var(--border-subtle);
+    }
+
+    .re-sidebar__item,
+    .re-sidebar__group {
+      margin-bottom: 0.2rem;
+    }
+
+    .re-sidebar__group {
+      margin-top: 0.65rem;
+    }
+
+    .re-sidebar__summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: background-color 0.15s ease;
+    }
+
+    .re-sidebar__summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .re-sidebar__summary:hover {
+      background-color: var(--bg-hover);
+    }
+
+    .re-sidebar__group-link {
+      color: inherit;
+      text-decoration: none;
+      flex: 1;
+    }
+
+    .re-sidebar__group-link:hover {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .re-sidebar__group-link.is-active {
+      color: var(--color-accent);
+    }
+
+    .re-sidebar__chevron {
+      color: var(--text-muted);
+      transition: transform 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    .re-sidebar__details[open] > .re-sidebar__summary .re-sidebar__chevron {
+      transform: rotate(90deg);
+    }
+
+    .re-sidebar__link {
+      display: block;
+      padding: 0.38rem 0.65rem;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.45;
+      transition: background-color 0.12s ease, color 0.12s ease;
+    }
+
+    .re-sidebar__link:hover {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .re-sidebar__link.is-active {
+      background-color: var(--color-accent-soft);
+      color: var(--color-accent);
+      font-weight: 600;
+    }
+
+    .re-sidebar-backdrop {
+      display: none;
+    }
+
+    @media (max-width: 960px) {
+      .re-sidebar {
+        position: fixed;
+        left: 0;
+        top: var(--header-height);
+        z-index: 35;
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .re-sidebar.is-open {
+        transform: translateX(0);
+      }
+
+      .re-sidebar-backdrop {
+        position: fixed;
+        inset: var(--header-height) 0 0 0;
+        z-index: 30;
+        background-color: var(--bg-backdrop);
+      }
+
+      .re-sidebar-backdrop.is-open {
+        display: block;
+      }
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const headerToggleBtn = document.querySelector("[data-sidebar-toggle]");
+    const sidebarCollapseBtn = document.querySelector("[data-sidebar-collapse]");
+    const sidebar = document.querySelector("[data-sidebar]");
+    const backdrop = document.querySelector("[data-sidebar-backdrop]");
+
+    if (!sidebar) return;
+
+    function isMobileViewport() {
+      return window.matchMedia("(max-width: 960px)").matches;
+    }
+
+    function setMobileOpen(open) {
+      sidebar.classList.toggle("is-open", open);
+      if (backdrop) {
+        backdrop.classList.toggle("is-open", open);
+        backdrop.hidden = !open;
+      }
+      if (headerToggleBtn) {
+        headerToggleBtn.setAttribute("aria-expanded", String(open));
+      }
+    }
+
+    function toggleDesktopCollapsed() {
+      const root = document.documentElement;
+      const isCollapsed = root.getAttribute("data-sidebar-collapsed") === "true";
+      const nextCollapsed = !isCollapsed;
+
+      if (nextCollapsed) {
+        root.setAttribute("data-sidebar-collapsed", "true");
+      } else {
+        root.removeAttribute("data-sidebar-collapsed");
+      }
+
+      if (headerToggleBtn) {
+        headerToggleBtn.setAttribute("aria-expanded", String(!nextCollapsed));
+      }
+
+      try {
+        localStorage.setItem("renon-sidebar-collapsed", String(nextCollapsed));
+      } catch {
+        // Ignore storage errors
+      }
+    }
+
+    function handleSidebarAction() {
+      if (isMobileViewport()) {
+        const isOpen = sidebar.classList.contains("is-open");
+        setMobileOpen(!isOpen);
+      } else {
+        toggleDesktopCollapsed();
+      }
+    }
+
+    if (headerToggleBtn) {
+      headerToggleBtn.addEventListener("click", handleSidebarAction);
+    }
+
+    if (sidebarCollapseBtn) {
+      sidebarCollapseBtn.addEventListener("click", handleSidebarAction);
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", () => setMobileOpen(false));
+    }
+  })();
+</script>

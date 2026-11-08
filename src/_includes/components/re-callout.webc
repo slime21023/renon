@@ -1,0 +1,8 @@
+<aside class="re-callout" :data-variant="variant || 'note'" role="note">
+  <div class="re-callout__header">
+    <strong class="re-callout__title" @text="title || '提示 (Note)'"></strong>
+  </div>
+  <div class="re-callout__body">
+    <slot></slot>
+  </div>
+</aside>

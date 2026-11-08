@@ -1,0 +1,131 @@
+<div class="re-mobile-toc">
+  <script webc:type="js">
+    const toc = Array.isArray(this.toc) ? this.toc : [];
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    function renderItems(items) {
+      if (!Array.isArray(items) || items.length === 0) return "";
+      return `<ul class="re-mobile-toc__list">
+        ${items
+          .map(
+            (item) => `<li class="re-mobile-toc__item">
+              <a href="#${escape(item.id)}" class="re-mobile-toc__link" data-mobile-toc-link>${escape(item.title)}</a>
+              ${renderItems(item.children)}
+            </li>`
+          )
+          .join("")}
+      </ul>`;
+    }
+
+    if (toc.length === 0) {
+      "";
+    } else {
+      `<details class="re-mobile-toc__details" data-mobile-toc>
+        <summary class="re-mobile-toc__summary">
+          <span>本頁目錄大綱</span>
+          <svg class="re-mobile-toc__icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </summary>
+        <nav class="re-mobile-toc__nav" aria-label="行動版本頁目錄">
+          ${renderItems(toc)}
+        </nav>
+      </details>`;
+    }
+  </script>
+</div>
+
+<style>
+  @layer components {
+    .re-mobile-toc {
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .re-mobile-toc__details {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-surface);
+      overflow: hidden;
+    }
+
+    .re-mobile-toc__summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .re-mobile-toc__summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .re-mobile-toc__icon {
+      color: var(--text-muted);
+      transition: transform 0.18s ease;
+    }
+
+    .re-mobile-toc__details[open] .re-mobile-toc__icon {
+      transform: rotate(180deg);
+    }
+
+    .re-mobile-toc__nav {
+      padding: 0.5rem 1rem 0.85rem;
+      border-top: 1px solid var(--border-subtle);
+      background-color: var(--bg-canvas);
+      font-size: 0.85rem;
+    }
+
+    .re-mobile-toc__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .re-mobile-toc__list .re-mobile-toc__list {
+      padding-left: 1rem;
+      border-left: 1px solid var(--border-subtle);
+      margin-left: 0.25rem;
+    }
+
+    .re-mobile-toc__link {
+      display: block;
+      padding: 0.3rem 0;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .re-mobile-toc__link:hover {
+      color: var(--color-accent);
+    }
+
+    @media (max-width: 1200px) {
+      .re-mobile-toc {
+        display: block;
+      }
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const details = document.querySelector("[data-mobile-toc]");
+    if (!details) return;
+    details.addEventListener("click", (e) => {
+      if (e.target.closest("[data-mobile-toc-link]")) {
+        details.open = false;
+      }
+    });
+  })();
+</script>

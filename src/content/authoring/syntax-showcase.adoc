@@ -1,0 +1,286 @@
+= AsciiDoc 語法與排版展示
+:nav-title: 語法展示
+:nav-order: 1
+:description: 展示 Renon 自訂 HTML5 Converter 對提示框、程式碼行號高亮、互動式分頁、Mermaid 圖表、KaTeX 數學公式與圖片燈箱的渲染效果與對應原始語法。
+:page-tags: syntax, highlightjs, mermaid, katex, tabs
+:stem: latexmath
+
+本頁實際展示常用與進階 AsciiDoc 語法經過 `RenonHtml5Converter` 轉換後的現代化視覺呈現，並在每個範例旁附上**可直接點擊右上角「複製」按鈕的 AsciiDoc 原始語法**。
+
+== 語意化提示框 (Admonitions)
+
+AsciiDoc 原生支援五種語意等級的提示區塊。Renon 將它們轉換為具備獨立 SVG 圖示與深淺色主題變數的 `<aside class="re-callout">` 元件：
+
+.AsciiDoc 提示框撰寫語法（可點擊右上角複製）
+[source,asciidoc]
+....
+NOTE: 這是一則 **提示 (Note)** 區塊，適合用來補充背景知識或額外說明。
+
+TIP: 這是一則 **技巧 (Tip)** 區塊，適合分享最佳實踐、快捷操作或效能優化建議。
+
+[IMPORTANT]
+.自訂提示框標題也是支援的！
+====
+當您需要包含多個段落或清單時，可以使用 `====` 區塊語法並加上 `.自訂標題`：
+
+* 支援在提示框內嵌入清單與 `行內程式碼`。
+* 自動根據 `[data-theme="dark"]` 切換柔和的深色背景與高對比邊框。
+====
+
+WARNING: 這是一則 **警告 (Warning)** 區塊，提醒讀者注意潛在的相容性問題或非預期行為。
+
+CAUTION: 這是一則 **注意 (Caution)** 區塊，用於標示可能導致資料遺失或不可逆變更的高風險操作。
+....
+
+**實際渲染效果：**
+
+NOTE: 這是一則 **提示 (Note)** 區塊，適合用來補充背景知識或額外說明。
+
+TIP: 這是一則 **技巧 (Tip)** 區塊，適合分享最佳實踐、快捷操作或效能優化建議。
+
+[IMPORTANT]
+.自訂提示框標題也是支援的！
+====
+當您需要包含多個段落或清單時，可以使用 `====` 區塊語法並加上 `.自訂標題`：
+
+* 支援在提示框內嵌入清單與 `行內程式碼`。
+* 自動根據 `[data-theme="dark"]` 切換柔和的深色背景與高對比邊框。
+====
+
+WARNING: 這是一則 **警告 (Warning)** 區塊，提醒讀者注意潛在的相容性問題或非預期行為。
+
+CAUTION: 這是一則 **注意 (Caution)** 區塊，用於標示可能導致資料遺失或不可逆變更的高風險操作。
+
+== 程式碼高亮、行號與重點行標記 (A1)
+
+在 `[source,<lang>]` 區塊加上 `linenums` 即可顯示行號，搭配 `highlight="2,5-7"` 可標記單行或連續區間重點行，且複製按鈕只會複製純程式碼（不包含行號）：
+
+.AsciiDoc 程式碼區塊語法（可點擊右上角複製）
+[source,asciidoc]
+....
+.src/lib/example-converter.js（含行號與第 2、5~7 行高亮）
+[source,javascript,linenums,highlight="2,5-7"]
+----
+import Asciidoctor from "@asciidoctor/core";
+import hljs from "highlight.js";
+
+export function highlightCode(source, lang = "javascript") {
+  if (hljs.getLanguage(lang)) {
+    return hljs.highlight(source, { language: lang }).value;
+  }
+  return source;
+}
+----
+....
+
+**實際渲染效果：**
+
+.src/lib/example-converter.js（含行號與第 2、5~7 行高亮）
+[source,javascript,linenums,highlight="2,5-7"]
+----
+import Asciidoctor from "@asciidoctor/core";
+import hljs from "highlight.js";
+
+export function highlightCode(source, lang = "javascript") {
+  if (hljs.getLanguage(lang)) {
+    return hljs.highlight(source, { language: lang }).value;
+  }
+  return source;
+}
+----
+
+== 互動式分頁區塊 (`<re-tabs>`) (A2)
+
+在定義清單上方加上 `[role="tabs",sync-group="pkg"]` 即可產生支援鍵盤方向鍵切換與 `localStorage` 跨區塊同步記憶的互動式分頁：
+
+.AsciiDoc 互動式分頁語法（可點擊右上角複製）
+[source,asciidoc]
+....
+[role="tabs",sync-group="pkg"]
+Bun (推薦)::
++
+[source,bash]
+----
+bun install
+bun run dev
+----
+
+npm::
++
+[source,bash]
+----
+npm install
+npm run dev
+----
+
+pnpm::
++
+[source,bash]
+----
+pnpm install
+pnpm run dev
+----
+....
+
+**實際渲染效果：**
+
+[role="tabs",sync-group="pkg"]
+Bun (推薦)::
++
+[source,bash]
+----
+bun install
+bun run dev
+----
+
+npm::
++
+[source,bash]
+----
+npm install
+npm run dev
+----
+
+pnpm::
++
+[source,bash]
+----
+pnpm install
+pnpm run dev
+----
+
+== Mermaid 系統架構圖 (A3)
+
+使用 `[mermaid]` 區塊即可直接繪製流程圖、序列圖或狀態圖，並隨深淺色主題切換自動重新渲染配色（點擊圖表還可開啟全螢幕燈箱放大預覽）：
+
+.AsciiDoc Mermaid 圖表語法（可點擊右上角複製）
+[source,asciidoc]
+....
+.Renon 資料流與元件渲染管線
+[mermaid]
+----
+flowchart LR
+    A["*.adoc 文件"] --> B["getData()<br/>解析屬性與 TOC"]
+    B --> C["RenonHtml5Converter<br/>Callout / Highlight / KaTeX"]
+    C --> D["WebC 佈局與元件展開"]
+    D --> E["Pagefind 靜態全文索引"]
+----
+....
+
+**實際渲染效果（點擊圖表可放大）：**
+
+.Renon 資料流與元件渲染管線
+[mermaid]
+----
+flowchart LR
+    A["*.adoc 文件"] --> B["getData()<br/>解析屬性與 TOC"]
+    B --> C["RenonHtml5Converter<br/>Callout / Highlight / KaTeX"]
+    C --> D["WebC 佈局與元件展開"]
+    D --> E["Pagefind 靜態全文索引"]
+----
+
+== KaTeX 數學公式建置期預渲染 (A4)
+
+在文件標頭宣告 `:stem: latexmath` 後，即可撰寫行內公式如質能等價公式 latexmath:[E = mc^2] 或時間複雜度 latexmath:[\mathcal{O}(n \log n)]，亦可使用 `[stem]` 撰寫獨立區塊公式（建置期直接轉為靜態 HTML+MathML，零客戶端 JS 負擔）：
+
+.AsciiDoc 數學公式語法（可點擊右上角複製）
+[source,asciidoc]
+....
+= 文章標題
+:stem: latexmath
+
+行內公式：質能等價公式 latexmath:[E = mc^2] 或時間複雜度 latexmath:[\mathcal{O}(n \log n)]。
+
+.高斯積分與歐拉恆等式
+[stem]
+++++
+\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi} \quad \text{and} \quad e^{i\pi} + 1 = 0
+++++
+....
+
+**實際渲染效果：**
+
+.高斯積分與歐拉恆等式
+[stem]
+++++
+\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi} \quad \text{and} \quad e^{i\pi} + 1 = 0
+++++
+
+== 圖片圖說與點擊燈箱放大 (C2)
+
+使用 `image::path[替代文字]` 引入的圖片會直接在文章中呈現並包裝為 `<figure class="re-figure">`，點擊圖片即可啟動全螢幕 `<dialog>` 燈箱放大檢視：
+
+.AsciiDoc 圖片與圖說語法（可點擊右上角複製）
+[source,asciidoc]
+....
+.Renon 靜態編譯管線架構圖（點擊圖片可放大檢視）
+image::/assets/images/renon-pipeline.svg[Renon 編譯管線架構圖]
+....
+
+**實際渲染效果（點擊下方圖片可放大）：**
+
+.Renon 靜態編譯管線架構圖（點擊圖片可放大檢視）
+image::/assets/images/renon-pipeline.svg[Renon 編譯管線架構圖]
+
+== 表格、鍵盤快捷鍵與定義清單
+
+=== 結構化資料表格
+
+.AsciiDoc 表格與鍵盤巨集語法（可點擊右上角複製）
+[source,asciidoc]
+....
+[cols="1,1,2", options="header"]
+|===
+| 語法特性 | Markdown 原生支援 | AsciiDoc 原生支援
+
+| 鍵盤快捷鍵巨集
+| 需手寫 `<kbd>`
+| 原生內建 kbd:[Ctrl+Shift+P] 巨集
+|===
+....
+
+**實際渲染效果：**
+
+[cols="1,1,2", options="header"]
+|===
+| 語法特性 | Markdown 原生支援 | AsciiDoc 原生支援
+
+| 跨欄 / 跨列表格
+| 需手寫 HTML `<table>`
+| 原生支援 `2+^{vbar}` 等格線合併語法
+
+| 五級語意提示框
+| 無標準語法
+| 原生內建 `NOTE` / `TIP` / `IMPORTANT` / `WARNING` / `CAUTION`
+
+| 外部檔案引入
+| 不支援
+| 原生內建 `include::path[]`（可指定行號區間或 tag）
+
+| 鍵盤與按鈕巨集
+| 需手寫 `<kbd>`
+| 原生內建 kbd:[Ctrl+Shift+P] 巨集（已預設開啟 `:experimental:`）
+|===
+
+=== 定義清單 (Description Lists)
+
+.AsciiDoc 定義清單語法（可點擊右上角複製）
+[source,asciidoc]
+....
+Eleventy (11ty)::
+零客戶端 JS 預設負擔的高速靜態網站生成器，v3 版本全面擁抱原生 ESM。
+
+Asciidoctor::
+標準化的技術文件處理引擎，提供完整的 AST（抽象語法樹）供提取章節結構與文件屬性。
+....
+
+**實際渲染效果：**
+
+Eleventy (11ty)::
+零客戶端 JS 預設負擔的高速靜態網站生成器，v3 版本全面擁抱原生 ESM。
+
+Asciidoctor::
+標準化的技術文件處理引擎，提供完整的 AST（抽象語法樹）供提取章節結構與文件屬性。
+
+WebC::
+Eleventy 官方推出的單一檔案元件系統，將 HTML 結構、Scoped CSS 與客戶端互動腳本整合於 `.webc` 檔案中。

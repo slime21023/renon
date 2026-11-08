@@ -1,0 +1,161 @@
+---
+layout: layouts/doc.webc
+title: 知識庫標籤索引
+description: 透過主題標籤探索全站結構化知識文件與技術指南。
+---
+<div class="re-tags-overview">
+  <script webc:type="js">
+    const tagList = Array.isArray(this.collections?.tagList) ? this.collections.tagList : [];
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    if (tagList.length === 0) {
+      `<p>目前尚無標籤分類。</p>`;
+    } else {
+      const cloudHtml = tagList
+        .map(
+          (entry) =>
+            `<a href="${escape(entry.url)}" class="re-tag-pill">
+              <span class="re-tag-pill__name">#${escape(entry.tag)}</span>
+              <span class="re-tag-pill__count">${entry.count}</span>
+            </a>`
+        )
+        .join("");
+
+      const sectionsHtml = tagList
+        .map(
+          (entry) => `<section class="re-tag-group" id="tag-${escape(entry.slug)}">
+            <div class="re-tag-group__header">
+              <h2 class="re-tag-group__title">
+                <a href="${escape(entry.url)}">#${escape(entry.tag)}</a>
+              </h2>
+              <span class="re-tag-group__badge">共 ${entry.count} 篇文件</span>
+            </div>
+            <div class="re-tag-group__cards">
+              ${entry.items
+                .map(
+                  (doc) => `<a href="${escape(doc.url)}" class="re-tag-card">
+                    <strong class="re-tag-card__title">${escape(doc.title)}</strong>
+                    ${doc.description ? `<p class="re-tag-card__desc">${escape(doc.description)}</p>` : ""}
+                  </a>`
+                )
+                .join("")}
+            </div>
+          </section>`
+        )
+        .join("");
+
+      `<div class="re-tag-cloud" aria-label="標籤雲">${cloudHtml}</div>
+       <div class="re-tag-groups">${sectionsHtml}</div>`;
+    }
+  </script>
+</div>
+
+<style>
+  @layer components {
+    .re-tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-bottom: 2.5rem;
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+    }
+
+    .re-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      text-decoration: none;
+      transition: border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+    }
+
+    .re-tag-pill:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .re-tag-pill__count {
+      font-size: 0.72rem;
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      background-color: var(--color-accent-soft);
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    .re-tag-group {
+      margin-bottom: 2.25rem;
+    }
+
+    .re-tag-group__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .re-tag-group__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .re-tag-group__badge {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .re-tag-group__cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .re-tag-card {
+      display: block;
+      padding: 0.95rem 1.15rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      text-decoration: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .re-tag-card:hover {
+      border-color: var(--color-accent);
+      background-color: var(--bg-hover);
+      text-decoration: none;
+    }
+
+    .re-tag-card__title {
+      display: block;
+      font-size: 1rem;
+      color: var(--color-accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .re-tag-card__desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+  }
+</style>

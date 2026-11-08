@@ -1,0 +1,304 @@
+= 全站設定與屬性映射
+:nav-title: 全站設定與屬性映射
+:nav-order: 2
+:description: 解析 src/_data/site.js 全站配置中心、Logo 與品牌色客製化，以及 AsciiDoc 單頁標頭屬性的雙層配置架構。
+:page-tags: configuration, attributes, data-cascade
+
+Renon 採用 **「雙層配置架構（Global Configuration Center + Per-Page Attribute Override）」**：
+
+1. **全站預設配置中心 (`src/_data/site.js`)**：集中管理品牌 Logo、頂部導覽與外部連結、社群圖示、介面功能開關（Feature Flags）、預設 TOC 大綱深度與頁尾版權宣告。
+2. **單頁 AsciiDoc 屬性覆寫 (`*.adoc` 標頭)**：無須撰寫 `---` YAML Frontmatter，`src/lib/asciidoc.js` 會在 `getData()` 階段直接解析 AsciiDoc 原生標頭屬性，並可針對單一頁面覆寫全站預設值。
+
+== 全站配置中心 (`src/_data/site.js`)
+
+您只需修改 `src/_data/site.js`，即可調整全站外觀與功能行為，無須修改任何 WebC 元件或 JavaScript 引擎原始碼：
+
+.src/_data/site.js 完整設定範例
+[source,javascript,linenums]
+----
+export default {
+  title: "Renon",
+  subtitle: "Knowledge Base Template",
+  tagline: "基於 Eleventy v3 + AsciiDoc + WebC 打造的現代化結構化知識分享網站模板",
+  author: "Renon Documentation Team",
+  lang: "zh-Hant",
+  url: "http://localhost:8080",
+
+  // 1. 品牌識別配置（支援文字縮寫或自訂圖片/SVG）
+  logo: {
+    text: "R",
+    image: "", // 例如 "/assets/images/logo.svg"，設定後優先渲染 <img>
+    alt: "Renon Logo"
+  },
+  badge: "Docs", // 設為 "" 或 false 即可隱藏標題旁徽章
+
+  // 2. 頂部主導覽選單（支援 external: true 或 http(s):// 自動新分頁開啟）
+  topNav: [
+    { label: "知識總覽", url: "/" },
+    { label: "快速上手", url: "/getting-started/" },
+    { label: "寫作指南", url: "/authoring/" },
+    { label: "標籤索引", url: "/tags/" }
+  ],
+
+  // 3. 頂部右側社群 / 專案連結圖示（內建 github, x, discord, globe 圖示）
+  socialLinks: [
+    {
+      icon: "github",
+      label: "GitHub 專案原始碼",
+      url: "https://github.com/example/renon"
+    }
+  ],
+
+  // 4. 全站功能開關 (Feature Flags)
+  features: {
+    search: true,                  // 頂部 Pagefind 全文檢索按鈕
+    themeToggle: true,             // 頂部深淺色主題切換按鈕
+    sidebarCollapsible: true,      // 是否允許收合左側導覽列
+    sidebarDefaultCollapsed: false,// 首次造訪時左側導覽列是否預設最小化
+    breadcrumbs: true,             // 文章頂部麵包屑導覽
+    readingTime: true,             // 文章頂部預估閱讀時間
+    lastUpdated: true,             // 文章底部最後更新日期
+    editLink: true,                // 文章底部「編輯此頁」連結
+    prevNext: true                 // 文章底部「上一篇 / 下一篇」卡片
+  },
+
+  // 5. 右側大綱 (TOC) 預設配置
+  toc: {
+    enabled: true,
+    maxLevel: 3                    // 預設擷取至 H3（單頁可透過 :toclevels: 4 覆寫）
+  },
+
+  // 6. 程式碼倉庫與頁尾設定
+  repoUrl: "https://github.com/example/renon",
+  editBaseUrl: "https://github.com/example/renon/edit/main/",
+  editLinkText: "於 GitHub 編輯此頁",
+  footer: {
+    copyright: "© 2026 Renon Documentation. Built with Eleventy v3, AsciiDoc & WebC."
+  }
+};
+----
+
+=== 全站功能開關 (`site.features`) 對照表
+
+[cols="2,1,3", options="header"]
+|===
+| 設定鍵值 | 預設值 | 功能說明
+
+| `features.search`
+| `true`
+| 控制頂部導覽列是否顯示 Pagefind 搜尋框與 `Ctrl+K` 快捷鍵觸發器
+
+| `features.themeToggle`
+| `true`
+| 控制頂部導覽列是否顯示深色 / 淺色主題切換按鈕
+
+| `features.sidebarCollapsible`
+| `true`
+| 控制是否顯示左側導覽列的「收合 / 最小化」切換按鈕
+
+| `features.sidebarDefaultCollapsed`
+| `false`
+| 設為 `true` 時，首次造訪網站的使用者預設會看到最小化後的左側導覽列
+
+| `features.breadcrumbs`
+| `true`
+| 控制文章標題上方是否顯示階層式麵包屑路徑（單頁可用 `:page-breadcrumbs: false` 覆寫）
+
+| `features.readingTime`
+| `true`
+| 控制文章標題下方是否顯示中英雙語預估閱讀時間（單頁可用 `:page-reading-time: false` 覆寫）
+
+| `features.lastUpdated`
+| `true`
+| 控制文章底部是否顯示最後更新日期（單頁可用 `:page-last-updated: false` 覆寫）
+
+| `features.editLink`
+| `true`
+| 控制文章底部是否顯示「編輯此頁」外部連結（單頁可用 `:page-edit-link: false` 覆寫）
+
+| `features.prevNext`
+| `true`
+| 控制文章底部是否顯示「上一篇 / 下一篇」導覽卡片（單頁可用 `:page-prev-next: false` 覆寫）
+|===
+
+== 品牌 Logo 與主題色客製化
+
+=== 1. 配置網站 Logo 與標題徽章
+
+頂部導覽列的品牌識別區支援 **「文字縮寫圖標」** 與 **「自訂圖片 / SVG 圖示」** 兩種模式，可在 `src/_data/site.js` 中自由切換：
+
+[role="tabs",sync-group="logo-mode"]
+模式 A：文字縮寫圖標（預設）::
++
+[source,javascript]
+----
+// src/_data/site.js
+export default {
+  title: "Renon",
+  logo: {
+    text: "R",     // 顯示於漸層方塊內的文字（1~2 個字元）
+    image: "",     // 留空代表使用文字圖標
+    alt: "Renon Logo"
+  },
+  badge: "Docs"    // 標題旁徽章文字（設為 "" 或 false 即可隱藏）
+};
+----
+
+模式 B：自訂 SVG / PNG 圖片::
++
+[source,javascript]
+----
+// 1. 先將圖檔放入 src/assets/images/logo.svg
+// 2. 於 src/_data/site.js 填入路徑：
+export default {
+  title: "Renon",
+  logo: {
+    text: "R",
+    image: "/assets/images/logo.svg", // 設定後優先渲染 <img>
+    alt: "Renon 品牌標誌"
+  },
+  badge: "v2.0"    // 可改為版本號或設為 "" 隱藏
+};
+----
+
+=== 2. 更換品牌主題色與版面尺寸 (`src/assets/css/tokens.css`)
+
+全站配色與版面寬度皆集中定義於 `src/assets/css/tokens.css`，直接修改 CSS 變數即可立即生效：
+
+[cols="2,2,3", options="header"]
+|===
+| CSS 變數名稱 | 預設值 | 影響範圍說明
+
+| `--color-accent`
+| `#4f46e5` (亮) / `#818cf8` (暗)
+| 全站品牌主色（連結、選中導覽項、Logo 漸層、按鈕高亮）
+
+| `--font-sans`
+| `"Inter", "Noto Sans TC", ...`
+| 全站內文與標題無襯線字型
+
+| `--font-mono`
+| `"JetBrains Mono", ...`
+| 程式碼區塊與鍵盤快捷鍵等寬字型
+
+| `--sidebar-width`
+| `17rem`
+| 左側章節導覽列展開時的寬度
+
+| `--content-max-width`
+| `54rem`
+| 中央文章閱讀區的最大欄寬（側欄最小化時自動擴展至 `64rem`）
+|===
+
+.範例：在 src/assets/css/tokens.css 將品牌色改為「海洋藍 (Ocean Blue)」
+[source,css]
+----
+:root {
+  --color-accent: #0284c7;
+  --color-accent-hover: #0369a1;
+  --color-accent-soft: #e0f2fe;
+  --color-accent-border: #7dd3fc;
+}
+
+:root[data-theme="dark"] {
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --color-accent-soft: rgb(14 165 233 / 0.15);
+  --color-accent-border: rgb(56 189 248 / 0.35);
+}
+----
+
+== 單頁 AsciiDoc 標頭屬性與覆寫規則
+
+以下為撰寫 `.adoc` 文件時可直接使用的標頭屬性清單：
+
+.標準文件標頭與單頁覆寫範例
+[source,asciidoc]
+----
+= 深入理解 WebC 元件生命週期
+:nav-title: WebC 生命週期
+:nav-order: 3
+:description: 探討 WebC 在伺服器端編譯與客戶端互動腳本的整合模式。
+:page-tags: webc, components, 11ty
+:toclevels: 4
+:page-edit-link: false
+----
+
+=== 單頁屬性轉換與覆寫對照表
+
+[cols="2,2,1,3", options="header"]
+|===
+| AsciiDoc 屬性 | 11ty 資料鍵值 | 轉換後型別 | 用途說明
+
+| `= 文件主標題`
+| `title`
+| `string`
+| 文章 `<h1>` 主標題、`<title>` 標籤與搜尋結果標題
+
+| `:nav-title:`
+| `navTitle`
+| `string`
+| 左側導覽樹、麵包屑與上下篇卡片顯示的簡短名稱（未設定時回退為 `title`）
+
+| `:nav-order:`
+| `navOrder`
+| `number`
+| 同層級頁面的排序權重（轉為數值比較，預設為 `999`）
+
+| `:description:`
+| `description`
+| `string`
+| 頁面副標題摘要與 SEO `<meta name="description">`
+
+| `:page-tags:` 或 `:tags:`
+| `tags`
+| `string[]`
+| 自動以逗號分割為陣列，直接相容於 Eleventy `collections` 與 `/tags/` 索引頁
+
+| `:toc: false`
+| `toc`
+| `Array`
+| 設為 `false` 時隱藏該頁的右側大綱欄與行動版目錄
+
+| `:toclevels: 4`
+| `toc`
+| `Array`
+| 覆寫單頁大綱擷取深度（支援 `2` ~ `4`，例如設為 `4` 時將 `H2`~`H4` 納入大綱）
+
+| `:stem: latexmath`
+| `hasMath`
+| `boolean`
+| 啟用建置期 KaTeX 數學公式預渲染並自動按需載入 `katex.min.css`
+
+| `:draft: true`
+| `draft`
+| `boolean`
+| 設為草稿時，自動啟用 `eleventyExcludeFromCollections: true` 並跳過檔案輸出
+
+| `:page-breadcrumbs: false`
+| `pageBreadcrumbs`
+| `boolean`
+| 單頁覆寫是否顯示頂部麵包屑導覽（優先於 `site.features.breadcrumbs`）
+
+| `:page-reading-time: false`
+| `pageReadingTime`
+| `boolean`
+| 單頁覆寫是否顯示預估閱讀時間（優先於 `site.features.readingTime`）
+
+| `:page-last-updated: false`
+| `pageLastUpdated`
+| `boolean`
+| 單頁覆寫是否顯示最後更新日期（優先於 `site.features.lastUpdated`）
+
+| `:page-edit-link: false`
+| `pageEditLink`
+| `boolean`
+| 單頁覆寫是否顯示「編輯此頁」連結（優先於 `site.features.editLink`）
+
+| `:page-prev-next: false`
+| `pagePrevNext`
+| `boolean`
+| 單頁覆寫是否顯示底部上下篇導覽卡片（優先於 `site.features.prevNext`）
+|===
+
+IMPORTANT: 若使用社群舊版插件，`:nav-order: 10` 與 `:nav-order: 2` 會因為字串排序導致 `10` 排在 `2` 前面；Renon 的 `src/lib/asciidoc.js` 已透過 `Number.parseFloat()` 確保數值排序完全正確。

@@ -1,0 +1,79 @@
+<!doctype html>
+<html
+  :lang="site?.lang || 'zh-Hant'"
+  data-theme="light"
+  :data-default-collapsed="site?.features?.sidebarDefaultCollapsed ? 'true' : 'false'"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title @text="title ? `${title} — ${site?.title || 'Renon'}` : (site?.title || 'Renon')"></title>
+    <meta name="description" :content="description || site?.tagline || ''" />
+
+    <link rel="canonical" :href="`${(site?.url || 'http://localhost:8080').replace(/\/$/, '')}${page.url || '/'}`" webc:keep />
+    <link rel="alternate" type="application/atom+xml" :title="`${site?.title || 'Renon'} Atom Feed`" :href="`${(site?.url || 'http://localhost:8080').replace(/\/$/, '')}/feed.xml`" webc:keep />
+    <meta property="og:type" content="article" webc:keep />
+    <meta property="og:site_name" :content="site?.title || 'Renon'" webc:keep />
+    <meta property="og:title" :content="title ? `${title} — ${site?.title || 'Renon'}` : (site?.title || 'Renon')" webc:keep />
+    <meta property="og:description" :content="description || site?.tagline || ''" webc:keep />
+    <meta property="og:url" :content="`${(site?.url || 'http://localhost:8080').replace(/\/$/, '')}${page.url || '/'}`" webc:keep />
+    <meta name="twitter:card" content="summary" webc:keep />
+    <meta name="twitter:title" :content="title ? `${title} — ${site?.title || 'Renon'}` : (site?.title || 'Renon')" webc:keep />
+    <meta name="twitter:description" :content="description || site?.tagline || ''" webc:keep />
+
+    <script webc:keep>
+      (() => {
+        try {
+          const saved = localStorage.getItem("renon-theme");
+          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const theme = saved === "dark" || saved === "light" ? saved : prefersDark ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+
+          const savedCollapsed = localStorage.getItem("renon-sidebar-collapsed");
+          const defaultCollapsed =
+            document.documentElement.getAttribute("data-default-collapsed") === "true";
+          if (savedCollapsed === "true" || (savedCollapsed === null && defaultCollapsed)) {
+            document.documentElement.setAttribute("data-sidebar-collapsed", "true");
+          }
+        } catch {
+          // Ignore storage access errors
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="/assets/css/tokens.css" webc:keep />
+    <link rel="stylesheet" href="/assets/css/base.css" webc:keep />
+    <link rel="stylesheet" href="/assets/css/asciidoc.css" webc:keep />
+    <link webc:if="hasMath" rel="stylesheet" href="/assets/vendor/katex/katex.min.css" webc:keep />
+    <style @raw="getBundle('css')" webc:keep></style>
+  </head>
+  <body>
+    <template @raw="content" webc:nokeep></template>
+
+    <script @raw="getBundle('js')" webc:keep></script>
+    <script webc:keep>
+      (() => {
+        document.addEventListener("click", async (e) => {
+          const btn = e.target.closest("[data-copy-code]");
+          if (!btn) return;
+          const wrapper = btn.closest(".re-codeblock");
+          const codeEl = wrapper?.querySelector("code");
+          if (!codeEl) return;
+
+          try {
+            await navigator.clipboard.writeText(codeEl.textContent || "");
+            const labelEl = btn.querySelector(".re-codeblock__copy-label");
+            btn.setAttribute("data-copied", "true");
+            if (labelEl) labelEl.textContent = "已複製！";
+            setTimeout(() => {
+              btn.removeAttribute("data-copied");
+              if (labelEl) labelEl.textContent = "複製";
+            }, 1800);
+          } catch {
+            // Clipboard unavailable
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

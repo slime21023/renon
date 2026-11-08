@@ -1,0 +1,97 @@
+<footer class="re-doc-footer">
+  <script webc:type="js">
+    const lastUpdated = this.lastUpdated;
+    const editPath = this.editPath;
+    const site = this.site || {};
+    const editBaseUrl = site.editBaseUrl || "";
+    const editLinkText = site.editLinkText || "於 GitHub 編輯此頁";
+    const copyright = site.footer?.copyright || "";
+
+    const showLastUpdated =
+      this.pageLastUpdated !== false &&
+      (this.pageLastUpdated === true || site.features?.lastUpdated !== false);
+    const showEditLink =
+      this.pageEditLink !== false &&
+      (this.pageEditLink === true || site.features?.editLink !== false);
+
+    const escape = (s) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    const formattedDate =
+      showLastUpdated && lastUpdated && this.formatDate
+        ? this.formatDate(lastUpdated)
+        : "";
+
+    const dateHtml = formattedDate
+      ? `<div class="re-doc-footer__updated">
+          <span>最後更新於：</span>
+          <time datetime="${escape(String(lastUpdated))}">${escape(formattedDate)}</time>
+        </div>`
+      : `<div></div>`;
+
+    const editHref =
+      showEditLink && editBaseUrl && editPath
+        ? `${String(editBaseUrl).replace(/\/$/, "")}/${String(editPath).replace(/^\//, "")}`
+        : "";
+
+    const editHtml = editHref
+      ? `<a href="${escape(editHref)}" class="re-doc-footer__edit" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>${escape(editLinkText)}</span>
+        </a>`
+      : "";
+
+    const copyrightHtml = copyright
+      ? `<p class="re-doc-footer__copyright">${escape(copyright)}</p>`
+      : "";
+
+    `<div class="re-doc-footer__inner">${dateHtml}${editHtml}</div>${copyrightHtml}`;
+  </script>
+</footer>
+
+<style>
+  @layer components {
+    .re-doc-footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px dashed var(--border-subtle);
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .re-doc-footer__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .re-doc-footer__edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .re-doc-footer__edit:hover {
+      color: var(--color-accent);
+      text-decoration: underline;
+    }
+
+    .re-doc-footer__copyright {
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+  }
+</style>

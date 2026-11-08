@@ -1,0 +1,51 @@
+= Renon 知識庫架構總覽
+:nav-title: 知識庫首頁
+:nav-order: 0
+:description: 基於 Eleventy v3 (ESM)、Asciidoctor 與 WebC 打造的現代化結構化知識分享網站模板。
+:page-tags: eleventy, asciidoc, webc, architecture
+
+Renon 是一套專為技術團隊與個人知識管理設計的**結構化文件網站模板**。它捨棄了繁複的前端框架與死板的舊式樣式，將 **AsciiDoc 的強大語意表達力**、**WebC 的單一檔案元件化架構**，以及 **原生 CSS 設計系統** 深度整合。
+
+== 核心設計哲學
+
+在傳統的靜態網站生成器中使用 AsciiDoc 時，常會遇到目錄（TOC）被綁死在內文、提示框使用過時的 `<table>` 標籤，以及必須額外撰寫 YAML Frontmatter 等痛點。Renon 透過自訂核心編譯管線徹底解決了這些問題：
+
+* **零 YAML Frontmatter 負擔**：直接解析 `.adoc` 原生標頭屬性（如 `:nav-title:`、`:nav-order:`、`:description:`、`:page-tags:`），自動轉型並注入 Eleventy Data Cascade。
+* **三欄式結構化排版**：左側自動化多層級目錄樹（`<re-sidebar>`）、中央高可讀性內文區、右側浮動章節大綱（`<re-toc>`，搭配 ScrollSpy 自動高亮）。
+* **語意化自訂 HTML5 轉換器**：將 AsciiDoc 的五種提示框（`NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION`）轉為現代化 Callout 卡片，並在建置期透過 `highlight.js` 完成零客戶端負擔的程式碼高亮與一鍵複製按鈕。
+* **內建 Pagefind 全站靜態搜尋**：支援 `kbd:[Ctrl+K]` 快速喚醒搜尋對話框，無須後端伺服器即可檢索中英文技術內容。
+
+NOTE: 您現在看到的這一頁，本身就是由 `src/content/index.adoc` 直接編譯而成，完全沒有使用任何 YAML Frontmatter！
+
+== 專案架構一覽
+
+[cols="1,2,3", options="header"]
+|===
+| 層級 | 目錄 / 檔案路徑 | 核心職責
+
+| 核心引擎層
+| `src/lib/asciidoc.js`
+| 封裝 `@asciidoctor/core`、屬性轉型、提取右側 TOC JSON、自訂 HTML5 Converter
+
+| 導覽引擎層
+| `src/lib/navigation.js`
+| 解析 `src/content/` 資料夾結構與 `:nav-order:`，自動產生多層級目錄樹、麵包屑與上下篇連結
+
+| 視覺設計層
+| `src/assets/css/*.css`
+| 原生 CSS `@layer` 與 Custom Properties 變數系統，內建深淺色主題切換
+
+| WebC 元件層
+| `src/_includes/**/*.webc`
+| 定義 `base.webc`、`doc.webc` 佈局與 `<re-header>`、`<re-sidebar>`、`<re-toc>`、`<re-search>` 等元件
+
+| 知識內容層
+| `src/content/**/*.adoc`
+| 純粹的 AsciiDoc 知識文件目錄，支援無限層級章節組織
+|===
+
+== 快速探索指南
+
+1. 前往 link:/getting-started/[第一章：快速上手]，了解如何啟動開發環境與組織目錄結構。
+2. 閱讀 link:/getting-started/configuration/[全站設定與屬性映射]，掌握所有可用的 AsciiDoc 文件標頭屬性。
+3. 瀏覽 link:/authoring/syntax-showcase/[AsciiDoc 語法展示]，實際體驗提示框、程式碼高亮、表格與鍵盤快捷鍵的渲染效果。

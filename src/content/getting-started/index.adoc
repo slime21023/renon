@@ -1,0 +1,78 @@
+= 第一章：快速上手
+:nav-title: 快速上手
+:nav-order: 1
+:description: 從零開始啟動 Renon 知識庫開發伺服器，並透過 3 分鐘實戰教學新增您的第一篇知識文件與章節。
+:page-tags: getting-started, bun, eleventy
+
+本章節將帶您快速認識 Renon 的開發指令、目錄慣例，以及如何新增您的第一篇結構化 AsciiDoc 知識文件與主題章節。
+
+== 為什麼採用「資料夾即章節」導覽？
+
+在大型技術手冊或知識庫中，手動維護一份龐大的 JSON 或 YAML 側邊欄設定檔非常容易出錯。Renon 採用 **「資料夾即章節（Folder-as-Section）」** 的自動化設計：
+
+* 每個子資料夾代表一個**主題章節**（例如 `src/content/getting-started/`）。
+* 資料夾內的 `index.adoc` 定義該章節的名稱（`:nav-title:`）、排序權重（`:nav-order:`）與章節導讀頁。
+* 同資料夾下的其他 `.adoc` 檔案會自動成為該章節的子頁面，並依據 `:nav-order:` 自動排序與串聯「上一篇 / 下一篇」導覽。
+
+TIP: 當您在左側選單切換不同文章時，所在章節的 `<details>` 分支會自動保持展開，並以高對比色彩標記當前閱讀位置。
+
+== 實戰教學：3 分鐘新增文章與章節
+
+=== 情境一：在現有章節下新增單篇文章
+
+假設您想在「快速上手 (`src/content/getting-started/`)」章節下新增一篇「常見問題 (`faq.adoc`)」：
+
+1. 在 `src/content/getting-started/` 目錄下建立 `faq.adoc`。
+2. 貼入以下最小範本並儲存（開發伺服器會立即熱重載並將其加入左側導覽列）：
+
+.src/content/getting-started/faq.adoc
+[source,asciidoc]
+----
+= 常見問題與排錯指南
+:nav-title: 常見問題
+:nav-order: 3
+:description: 彙整安裝與撰寫 AsciiDoc 時常見的問題與解決方法。
+:page-tags: faq, troubleshooting
+
+== 如何隱藏特定頁面的右側大綱？
+
+只需在文件標頭加上 `:toc: false`，該頁面就會自動隱藏右側大綱欄。
+----
+
+=== 情境二：建立全新的主題章節（資料夾）
+
+假設您想新增「第三章：部署指南 (`src/content/deployment/`)」：
+
+1. 建立資料夾 `src/content/deployment/`。
+2. 在資料夾內建立章節入口頁 `src/content/deployment/index.adoc`（設定 `:nav-order: 3` 讓它排在第二章之後）：
++
+.src/content/deployment/index.adoc（章節導讀頁）
+[source,asciidoc]
+----
+= 第三章：自動化部署指南
+:nav-title: 部署指南
+:nav-order: 3
+:description: 將建置完成的 _site 靜態檔案部署至 GitHub Pages、Cloudflare Pages 或 Netlify。
+:page-tags: deployment, ci-cd
+
+本章介紹如何將 `bun run build` 產出的 `_site/` 目錄發布至各大靜態託管平台。
+----
+
+3. 接著在同資料夾下建立子頁面（例如 `src/content/deployment/cloudflare-pages.adoc`，設定 `:nav-order: 1`），左側導覽樹就會自動產生可展開的「部署指南」章節分支！
+
+=== 情境三：在文章中插入圖片
+
+1. 將圖片檔（`.svg`、`.png`、`.webp` 或 `.jpg`）放入 `src/assets/images/` 目錄（例如 `src/assets/images/architecture.png`）。
+2. 在 `.adoc` 文章中使用 `image::/assets/images/...[]` 語法引用：
+
+.插入圖片並附上圖說標題
+[source,asciidoc]
+----
+.圖說標題：系統部署拓樸圖（點擊圖片可開啟全螢幕燈箱放大）
+image::/assets/images/architecture.png[系統部署拓樸圖]
+----
+
+== 本章詳細指南
+
+* link:/getting-started/installation/[環境安裝與目錄結構]：使用 Bun 安裝相依套件、啟動開發伺服器與了解網址映射規則。
+* link:/getting-started/configuration/[全站設定與屬性映射]：深入了解 `src/_data/site.js` 全站配置中心、Logo 與品牌色客製化，以及 AsciiDoc 單頁屬性覆寫規則。

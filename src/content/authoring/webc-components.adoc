@@ -1,0 +1,63 @@
+= WebC 元件與搜尋整合指南
+:nav-title: WebC 元件與搜尋整合
+:nav-order: 2
+:description: 了解 Renon 如何運用 WebC 單一檔案元件管理佈局、CSS Bundling 以及 Pagefind 全站搜尋。
+:page-tags: webc, pagefind, css-layers
+
+Renon 的所有視覺介面皆由位於 `src/_includes/components/` 下的 **WebC 單一檔案元件** 構成，並透過 `eleventy.config.js` 自動註冊為全域元件。
+
+== 核心 WebC 元件架構
+
+[cols="1,2,2", options="header"]
+|===
+| 元件標籤 | 檔案位置 | 功能說明
+
+| `<re-header>`
+| `components/re-header.webc`
+| 頂部固定導覽列，整合網站品牌、主導覽連結、搜尋觸發器與主題切換
+
+| `<re-sidebar>`
+| `components/re-sidebar.webc`
+| 左側遞迴章節樹，根據 `collections.docsTree` 自動展開當前頁面所在目錄
+
+| `<re-toc>`
+| `components/re-toc.webc`
+| 右側浮動章節大綱，接收 AsciiDoc AST 抽離出的 `toc` 陣列並提供 ScrollSpy
+
+| `<re-breadcrumbs>`
+| `components/re-breadcrumbs.webc`
+| 文章頂部麵包屑路徑，自動反映當前頁面所在的目錄階層
+
+| `<re-prev-next>`
+| `components/re-prev-next.webc`
+| 文章底部上下篇導覽卡片，依據深度優先閱讀順序自動串聯全站文章
+
+| `<re-search>`
+| `components/re-search.webc`
+| 整合 Pagefind 的 `<dialog>` 模態搜尋框，支援 `Ctrl+K` 快捷鍵與關鍵字高亮
+
+| `<re-theme-toggle>`
+| `components/re-theme-toggle.webc`
+| 深淺色主題切換器，自動記憶使用者偏好於 `localStorage`
+|===
+
+== 原生 CSS Cascade Layers 設計
+
+為了在不引入 Tailwind 或 CSS-in-JS 的前提下維持極致的樣式可維護性，Renon 在 `src/assets/css/tokens.css` 定義了明確的 `@layer` 優先級順序：
+
+[source,css]
+----
+@layer reset, tokens, base, asciidoc, components, utilities;
+----
+
+1. **`reset` & `tokens`**：定義全站色票、間距、圓角與深淺色模式 CSS Custom Properties (`--bg-canvas`、`--text-primary`、`--color-accent` 等)。
+2. **`base` & `asciidoc`**：負責基礎元素與 AsciiDoc 內文（`.re-prose`）的語意化排版。
+3. **`components`**：各個 `.webc` 元件內部的 `<style>` 區塊會由 `@11ty/eleventy-plugin-bundle` 自動收集並注入 `<head>`，確保只有當頁用到的元件樣式才會被載入。
+
+== Pagefind 靜態全文檢索原理
+
+在 `layouts/doc.webc` 中，主要文章容器標記了 `data-pagefind-body` 屬性：
+
+* Pagefind 只會針對帶有 `data-pagefind-body` 的 `<main>` 內容建立索引，自動略過頂部導覽列與左側目錄樹的重複連結文字。
+* 支援完整的中文（CJK）字詞切分與即時摘要預覽。
+* 客戶端僅在使用者點擊搜尋框或按下 `Ctrl+K` 時才會動態載入 `/pagefind/pagefind.js` WASM 檢索核心，達成真正的 **Zero-JS by Default** 首屏載入體驗。
